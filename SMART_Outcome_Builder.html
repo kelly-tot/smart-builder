@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SMART Learning Outcome Builder — Adult Learning</title>
+<style>
+  :root {
+    --utt-red: #c8102e;
+    --utt-dark: #1f2937;
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --good: #2e7d32;
+    --bad: #c0392b;
+    --muted: #6b7280;
+    --accent: #f4a261;
+    --soft: #fce8e8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: linear-gradient(135deg, #f7f5f0 0%, #fce8e8 100%);
+    color: var(--utt-dark);
+    margin: 0;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 20px; }
+  header h1 {
+    color: var(--utt-red);
+    margin: 0;
+    font-size: 1.9rem;
+    letter-spacing: 0.3px;
+  }
+  header p { color: var(--muted); margin: 6px 0 0; }
+
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 22px 26px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+  }
+
+  .progress-bar {
+    height: 10px;
+    background: #ececec;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--utt-red), var(--accent));
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .step-tag {
+    display: inline-block;
+    background: var(--utt-red);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  .step-tag.gray { background: #9aa0a6; }
+
+  h2 { margin: 4px 0 6px; color: var(--utt-dark); font-size: 1.25rem; }
+  .hint { color: var(--muted); font-size: 0.92rem; margin: 0 0 14px; }
+
+  label.field-label {
+    display: block;
+    font-weight: 600;
+    margin: 10px 0 6px;
+    font-size: 0.95rem;
+  }
+
+  input[type="text"], textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #d8d8d8;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--utt-red);
+  }
+  textarea { min-height: 70px; resize: vertical; }
+
+  .verb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .verb-btn {
+    padding: 8px 10px;
+    border: 1.5px solid #e0e0e0;
+    background: #fafafa;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .verb-btn:hover { border-color: var(--utt-red); background: #fff; }
+  .verb-btn.selected {
+    background: var(--utt-red);
+    color: #fff;
+    border-color: var(--utt-red);
+    font-weight: 600;
+  }
+
+  .bloom-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0 10px;
+  }
+  .bloom-tab {
+    padding: 6px 12px;
+    border-radius: 16px;
+    background: #efefef;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: all 0.15s;
+  }
+  .bloom-tab:hover { background: #e2e2e2; }
+  .bloom-tab.active {
+    background: var(--utt-dark);
+    color: #fff;
+    border-color: var(--utt-dark);
+  }
+
+  .preview-card {
+    background: linear-gradient(135deg, #fff 0%, var(--soft) 100%);
+    border-left: 5px solid var(--utt-red);
+  }
+  .preview-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    background: #fff;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px dashed #e0c0c0;
+    min-height: 60px;
+  }
+  .preview-text .placeholder { color: #b0b0b0; font-style: italic; }
+  .preview-text .part {
+    background: #fff4e6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    color: var(--utt-dark);
+  }
+
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+  }
+  .check-icon.ok { background: var(--good); }
+  .check-icon.no { background: #c0c0c0; }
+  .check-letter {
+    font-weight: 700;
+    margin-right: 4px;
+    color: var(--utt-red);
+  }
+  .check-msg { font-size: 0.95rem; }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  button.action {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: transform 0.1s, box-shadow 0.2s;
+  }
+  button.action:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  .btn-primary { background: var(--utt-red); color: #fff; }
+  .btn-secondary { background: #fff; color: var(--utt-dark); border: 1.5px solid #d0d0d0 !important; }
+  .btn-ghost { background: transparent; color: var(--muted); text-decoration: underline; }
+
+  .score-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-left: 8px;
+  }
+  .score-low { background: #ffe1e1; color: var(--bad); }
+  .score-mid { background: #fff4d6; color: #b07900; }
+  .score-high { background: #d8f1da; color: var(--good); }
+
+  details {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    border: 1px solid #eee;
+  }
+  details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--utt-red);
+    font-size: 0.92rem;
+  }
+  details p { margin: 8px 0 0; font-size: 0.92rem; color: var(--utt-dark); }
+
+  .template-banner {
+    background: #fff8ee;
+    border-left: 4px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    margin-bottom: 14px;
+  }
+  .template-banner code {
+    background: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Consolas", monospace;
+    font-size: 0.88rem;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-top: 20px;
+  }
+
+  @media print {
+    body { background: #fff; }
+    .no-print { display: none !important; }
+    .card { box-shadow: none; border: 1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>SMART Learning Outcome Builder</h1>
+    <p>Adult Learning — Section 1.5 · Setting clear and achievable learning objectives</p>
+  </header>
+
+  <div class="card no-print">
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="template-banner">
+      <strong>SMART Template:</strong>
+      <code>By (time), the (audience) will (verb = performance) as measured by (assessment + standard/criteria).</code>
+    </div>
+    <p class="hint" style="margin:0">
+      Fill in each step below. Your learning outcome assembles in real time at the bottom. When all five SMART checks are green, your outcome is ready to use.
+    </p>
+  </div>
+
+  <!-- STEP 1: AUDIENCE (Specific - who) -->
+  <div class="card">
+    <span class="step-tag">Step 1 · Specific</span>
+    <h2>Who are the learners?</h2>
+    <p class="hint">Name the audience precisely. "Students" is vague — "first-year UTT Engineering students" is specific.</p>
+    <label class="field-label" for="audience">The audience (who will achieve it):</label>
+    <input type="text" id="audience" placeholder="e.g., first-year UTT Engineering students" />
+    <details><summary>Why this matters</summary>
+      <p>The <strong>Specific</strong> criterion asks you to concisely state <em>what</em> will be done and <em>who</em> will achieve it. Naming the audience also activates the adult "Need to Know" principle — learners see the outcome applies to them.</p>
+    </details>
+  </div>
+
+  <!-- STEP 2: VERB (Specific / Bloom's) -->
+  <div class="card">
+    <span class="step-tag">Step 2 · Specific + Measurable</span>
+    <h2>Pick an action verb (Bloom's Taxonomy)</h2>
+    <p class="hint">Choose a verb that names an <strong>observable behaviour</strong>. Avoid fuzzy verbs like "understand" or "know" — they cannot be measured.</p>
+
+    <div class="bloom-tabs" id="bloomTabs">
+      <div class="bloom-tab active" data-level="remember">1. Remember</div>
+      <div class="bloom-tab" data-level="understand">2. Understand</div>
+      <div class="bloom-tab" data-level="apply">3. Apply</div>
+      <div class="bloom-tab" data-level="analyze">4. Analyse</div>
+      <div class="bloom-tab" data-level="evaluate">5. Evaluate</div>
+      <div class="bloom-tab" data-level="create">6. Create</div>
+    </div>
+
+    <div class="verb-grid" id="verbGrid"></div>
+
+    <label class="field-label" for="verbCustom" style="margin-top:14px">Selected / custom verb:</label>
+    <input type="text" id="verbCustom" placeholder="Click a verb above or type your own" />
+
+    <details><summary>Why action verbs?</summary>
+      <p>Verbs like "list" target lower-order recall; verbs like "formulate" target higher-order creation. Concrete verbs make learning explicit and the outcome assessable.</p>
+    </details>
+  </div>
+
+  <!-- STEP 3: PERFORMANCE / CONTENT -->
+  <div class="card">
+    <span class="step-tag">Step 3 · Specific + Relevant</span>
+    <h2>What will they perform — and why is it relevant?</h2>
+    <p class="hint">Describe the actual task or content. Tie it to the programme purpose or the learner's professional role to make it <strong>relevant</strong>.</p>
+    <label class="field-label" for="performance">The performance / content:</label>
+    <input type="text" id="performance" placeholder="e.g., a hazard-identification report for a chemical plant case study" />
+  </div>
+
+  <!-- STEP 4: MEASURABLE -->
+  <div class="card">
+    <span class="step-tag">Step 4 · Measurable + Attainable</span>
+    <h2>How will achievement be measured?</h2>
+    <p class="hint">State the assessment AND the standard. Without a standard ("at least 80%", "to industry checklist"), the outcome cannot be judged achieved.</p>
+    <label class="field-label" for="assessment">Assessment / measure:</label>
+    <input type="text" id="assessment" placeholder="e.g., a peer-assessed group presentation" />
+    <label class="field-label" for="standard">Standard or criteria:</label>
+    <input type="text" id="standard" placeholder="e.g., scoring at least 75% on the OSH rubric" />
+    <details><summary>Achievable check</summary>
+      <p>Confirm the learners have the prerequisite skills and resources, and that the performance is observable. Objectives that are unrealistic cause frustration and demotivation.</p>
+    </details>
+  </div>
+
+  <!-- STEP 5: TIME-BOUND -->
+  <div class="card">
+    <span class="step-tag">Step 5 · Time-bound</span>
+    <h2>By when?</h2>
+    <p class="hint">Set a realistic deadline — end of session, end of module, end of semester. "By the end of…" works well.</p>
+    <label class="field-label" for="time">Timeframe:</label>
+    <input type="text" id="time" placeholder="e.g., the end of Week 6" />
+  </div>
+
+  <!-- LIVE PREVIEW -->
+  <div class="card preview-card">
+    <span class="step-tag gray">Your SMART Learning Outcome</span>
+    <h2>Live preview <span id="scoreBadge" class="score-badge score-low">0 / 5</span></h2>
+    <p class="preview-text" id="preview">
+      <span class="placeholder">Start filling in the steps above and your outcome will appear here…</span>
+    </p>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="card">
+    <span class="step-tag">SMART Self-check</span>
+    <h2>Does it pass all five tests?</h2>
+    <div id="checklist"></div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="card no-print">
+    <div class="btn-row">
+      <button class="action btn-primary" onclick="copyOutcome()">Copy outcome</button>
+      <button class="action btn-secondary" onclick="window.print()">Print / Save as PDF</button>
+      <button class="action btn-ghost" onclick="loadExample()">Load worked example</button>
+      <button class="action btn-ghost" onclick="resetAll()">Reset</button>
+    </div>
+    <p class="hint" id="copyMsg" style="margin-top:10px;color:var(--good);display:none">Copied to clipboard.</p>
+  </div>
+
+  <footer>
+    The University of Trinidad and Tobago · Adult Learning Module 1.5 · Setting clear and achievable learning objectives
+  </footer>
+</div>
+
+<script>
+  // ---------- Bloom's verbs ----------
+  const VERBS = {
+    remember:   ["list", "define", "identify", "name", "recall", "state", "label", "match"],
+    understand: ["explain", "describe", "summarise", "classify", "interpret", "compare", "paraphrase", "discuss"],
+    apply:      ["apply", "demonstrate", "calculate", "implement", "solve", "use", "execute", "carry out"],
+    analyze:    ["analyse", "differentiate", "examine", "categorise", "investigate", "contrast", "deconstruct"],
+    evaluate:   ["evaluate", "justify", "critique", "assess", "defend", "judge", "argue", "recommend"],
+    create:     ["design", "formulate", "construct", "develop", "produce", "compose", "plan", "generate"]
+  };
+
+  const $ = id => document.getElementById(id);
+  const fields = ["audience", "verbCustom", "performance", "assessment", "standard", "time"];
+
+  // ---------- Bloom tabs + verb chips ----------
+  function renderVerbs(level) {
+    const grid = $("verbGrid");
+    grid.innerHTML = "";
+    VERBS[level].forEach(v => {
+      const b = document.createElement("div");
+      b.className = "verb-btn";
+      b.textContent = v;
+      if ($("verbCustom").value.trim().toLowerCase() === v) b.classList.add("selected");
+      b.onclick = () => {
+        $("verbCustom").value = v;
+        document.querySelectorAll(".verb-btn").forEach(x => x.classList.remove("selected"));
+        b.classList.add("selected");
+        update();
+      };
+      grid.appendChild(b);
+    });
+  }
+  document.querySelectorAll(".bloom-tab").forEach(t => {
+    t.onclick = () => {
+      document.querySelectorAll(".bloom-tab").forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      renderVerbs(t.dataset.level);
+    };
+  });
+  renderVerbs("remember");
+
+  // ---------- Live build ----------
+  function part(text, placeholder) {
+    return text.trim()
+      ? `<span class="part">${escapeHtml(text.trim())}</span>`
+      : `<span class="placeholder">[${placeholder}]</span>`;
+  }
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  function update() {
+    const v = Object.fromEntries(fields.map(f => [f, $(f).value]));
+
+    // Build the sentence following the template
+    const sentence =
+      "By " + part(v.time, "time") +
+      ", " + part(v.audience, "audience") +
+      " will " + part(v.verbCustom, "verb") +
+      " " + part(v.performance, "performance") +
+      ", as measured by " + part(v.assessment, "assessment") +
+      " " + part(v.standard, "standard / criteria") + ".";
+
+    $("preview").innerHTML = sentence;
+
+    runChecks(v);
+    updateProgress(v);
+  }
+
+  // ---------- SMART checklist ----------
+  const FUZZY = ["know", "understand", "appreciate", "learn", "be aware", "be familiar", "grasp"];
+
+  function runChecks(v) {
+    const verb = v.verbCustom.trim().toLowerCase();
+    const isFuzzy = FUZZY.some(f => verb === f || verb.startsWith(f + " "));
+
+    const checks = [
+      {
+        letter: "S",
+        label: "Specific",
+        pass: v.audience.trim().length > 2 && v.performance.trim().length > 2 && verb && !isFuzzy,
+        msgOk: "Audience, action verb and performance are all named.",
+        msgNo: isFuzzy
+          ? `Replace the fuzzy verb "${verb}" with an observable one (e.g., explain, demonstrate, design).`
+          : "Add audience, an observable action verb, and the performance/content."
+      },
+      {
+        letter: "M",
+        label: "Measurable",
+        pass: v.assessment.trim().length > 2 && v.standard.trim().length > 2,
+        msgOk: "An assessment and a clear standard are stated.",
+        msgNo: "State both the assessment (how) AND the standard/criteria (how well — e.g., 75%, rubric, checklist)."
+      },
+      {
+        letter: "A",
+        label: "Attainable",
+        pass: !!verb && !isFuzzy && v.performance.trim().length > 2,
+        msgOk: "The performance is observable, so achievement can be demonstrated.",
+        msgNo: "Make the performance observable — if you cannot watch a learner do it, you cannot judge it attained."
+      },
+      {
+        letter: "R",
+        label: "Relevant",
+        pass: v.audience.trim().length > 2 && v.performance.trim().length > 10,
+        msgOk: "The performance is concrete enough to connect to learners' professional role.",
+        msgNo: "Tie the performance to the programme's purpose or the learner's professional role — describe it more concretely."
+      },
+      {
+        letter: "T",
+        label: "Time-bound",
+        pass: v.time.trim().length > 2,
+        msgOk: "A clear deadline is set.",
+        msgNo: "Add a timeframe (e.g., 'the end of Week 6', 'by the end of the workshop')."
+      }
+    ];
+
+    const list = $("checklist");
+    list.innerHTML = "";
+    let score = 0;
+    checks.forEach(c => {
+      if (c.pass) score++;
+      const row = document.createElement("div");
+      row.className = "check-row";
+      row.innerHTML = `
+        <div class="check-icon ${c.pass ? "ok" : "no"}">${c.pass ? "✓" : "•"}</div>
+        <div><span class="check-letter">${c.letter}</span><strong>${c.label}</strong> —
+          <span class="check-msg">${c.pass ? c.msgOk : c.msgNo}</span>
+        </div>`;
+      list.appendChild(row);
+    });
+
+    const badge = $("scoreBadge");
+    badge.textContent = `${score} / 5`;
+    badge.className = "score-badge " + (score >= 5 ? "score-high" : score >= 3 ? "score-mid" : "score-low");
+  }
+
+  function updateProgress(v) {
+    const filled = fields.filter(f => v[f].trim().length > 0).length;
+    $("progress").style.width = (filled / fields.length * 100) + "%";
+  }
+
+  // ---------- Actions ----------
+  function copyOutcome() {
+    const text = $("preview").innerText.replace(/\[[^\]]+\]/g, "____");
+    navigator.clipboard.writeText(text).then(() => {
+      const m = $("copyMsg");
+      m.style.display = "block";
+      setTimeout(() => m.style.display = "none", 2200);
+    });
+  }
+
+  function resetAll() {
+    fields.forEach(f => $(f).value = "");
+    document.querySelectorAll(".verb-btn").forEach(x => x.classList.remove("selected"));
+    update();
+  }
+
+  function loadExample() {
+    $("audience").value = "second-year UTT Chemical Engineering students";
+    $("verbCustom").value = "develop";
+    $("performance").value = "a chemical waste segregation, storage and disposal plan for a teaching laboratory";
+    $("assessment").value = "a written waste-management plan assessed against the EMA Hazardous Waste Rules checklist";
+    $("standard").value = "scoring at least 80% on the compliance rubric";
+    $("time").value = "the end of Week 8";
+    // switch Bloom's tab to 'create'
+    document.querySelectorAll(".bloom-tab").forEach(x => x.classList.remove("active"));
+    document.querySelector('.bloom-tab[data-level="create"]').classList.add("active");
+    renderVerbs("create");
+    update();
+  }
+
+  // ---------- Wire up ----------
+  fields.forEach(f => $(f).addEventListener("input", update));
+  update();
+</script>
+</body>
+</html>
